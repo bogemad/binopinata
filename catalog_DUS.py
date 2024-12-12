@@ -47,7 +47,7 @@ def get_single_nuc_variants(recs, DUSs):
             hits_d[(k,v)] += len(re.findall(v, str(rec.seq.reverse_complement())))
             for i, base in enumerate(v):
                 re_term =  generate_re_term(v, i, base)
-                re_hits = re.findall(re_term, str(rec.seq))
+                re_hits = re.findall(re_term, str(rec.seq)) + re.findall(re_term, str(rec.seq.reverse_complement()))
                 for hit in re_hits:
                     if not hit in list(DUSs.values()):
                         hits_d[(f"{k}-like",hit)] += 1
@@ -61,6 +61,19 @@ def check_if_single_nuc_variant_already_defined(DUSs, seq, v):
             return True
     return False
 
+def fix_double_hits(hits_d):
+    fixed_hits_d = {}
+    multiple_hits_d = defaultdict(list)
+    for name, seq in hits_d.keys():
+        multiple_hits_d[seq].append(name)
+    for k, v in multiple_hits_d.items():
+        if len(v) == 1:
+            fixed_hits_d[(v[0], k)] = hits_d[(v[0],k)]
+        else: 
+            new_name_list = [ x.replace("-like", "") for x in v ]
+            new_name = "-".join(new_name_list) + "-like"
+            fixed_hits_d[(new_name, k)] = hits_d[(v[0],k)]
+    return fixed_hits_d
 
 def main():
     DUSs = {
@@ -75,7 +88,8 @@ def main():
         }
     recs = SeqIO.parse(sys.argv[1], 'fasta')
     #repeats = import_repeat_finder(infile)
-    hits_d = get_single_nuc_variants(recs, DUSs)
+    pre_hits_d = get_single_nuc_variants(recs, DUSs)
+    hits_d = fix_double_hits(pre_hits_d)
     outfile = open(sys.argv[2], 'w')
     sorted_hits_d = sorted(hits_d.items(), key=lambda x:x[1], reverse=True)
     for k, v in sorted_hits_d:
