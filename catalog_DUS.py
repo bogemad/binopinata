@@ -84,7 +84,8 @@ def main():
         'AG-simDUS':'AGGCTGCCTGAA',
         'AG-kingDUS':'AGGCAGCCTGAA',
         'AG-king3DUS':'AAGCAGCCTGCA',
-        'AG-eikDUS':'AGGCTACCTGAA'
+        'AG-eikDUS':'AGGCTACCTGAA',
+        'AG-king-sim-dyad': 'TTCAGGCAGCCTGAA'
         }
     recs = SeqIO.parse(sys.argv[1], 'fasta')
     #repeats = import_repeat_finder(infile)
